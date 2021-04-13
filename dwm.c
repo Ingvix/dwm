@@ -222,11 +222,6 @@ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interac
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
 static void attach(Client *c);
-static void attachabove(Client *c);
-static void attachaside(Client *c);
-static void attachbelow(Client *c);
-static void attachbottom(Client *c);
-static void attachtop(Client *c);
 static void attachstack(Client *c);
 static void buttonpress(XEvent *e);
 static void checkotherwm(void);
@@ -284,7 +279,9 @@ static void run(void);
 static void scan(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
+static void setattachdir(const Arg *arg);
 static void setclientstate(Client *c, long state);
+static void setdefaultattachdir(const Arg *arg);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
@@ -385,6 +382,7 @@ static Monitor *mons, *selmon, *lastselmon;
 static Swallow *swallows;
 static Window root, wmcheckwin;
 static KeySym keychain = -1;
+static int attachdirection = -1;
 
 #include "ipc.h"
 
@@ -572,75 +570,64 @@ arrangemon(Monitor *m)
 void
 attach(Client *c)
 {
-	c->next = c->mon->clients;
-	c->mon->clients = c;
-}
-
-void
-attachabove(Client *c)
-{
-	if (c->mon->sel == NULL || c->mon->sel == c->mon->clients || c->mon->sel->isfloating) {
-		attach(c);
-		return;
-	}
-
 	Client *at;
-	for (at = c->mon->clients; at->next != c->mon->sel; at = at->next);
-	c->next = at->next;
-	at->next = c;
-}
 
-void
-attachaside(Client *c) {
-	Client *at = nexttagged(c);
-	if(!at) {
-		attach(c);
-		return;
-		}
-	c->next = at->next;
-	at->next = c;
-}
+	switch(attachdirection == -1 ? defaultattachdirection : attachdirection){
+		case 1: /* attach above */
+			if (c->mon->sel == NULL || c->mon->sel == c->mon->clients || c->mon->sel->isfloating) {
+				attach(c);
+				return;
+			}
 
-void
-attachbelow(Client *c)
-{
-	if(c->mon->sel == NULL || c->mon->sel == c || c->mon->sel->isfloating) {
-		attach(c);
-		return;
+			for (at = c->mon->clients; at->next != c->mon->sel; at = at->next);
+			c->next = at->next;
+			at->next = c;
+			break;
+		case 2: /* attach aside */
+			at = nexttagged(c);
+			if(!at) {
+				attach(c);
+				return;
+				}
+			c->next = at->next;
+			at->next = c;
+			break;
+		case 3: /* attach below */
+			if(c->mon->sel == NULL || c->mon->sel == c || c->mon->sel->isfloating) {
+				attach(c);
+				return;
+			}
+			c->next = c->mon->sel->next;
+			c->mon->sel->next = c;
+			break;
+		case 4: /* attach bottom */
+			at = c->mon->clients;
+			for (; at && at->next; at = at->next);
+			c->next = NULL;
+			if (at)
+				at->next = c;
+			else
+				c->mon->clients = c;
+			break;
+		case 5: /* attach top */
+			at = c->mon->clients;
+
+			for (int n = 1; 
+				at && at->next && (at->isfloating || !ISVISIBLEONTAG(at, c->tags) || n != selmon->nmaster);
+				n = at->isfloating || !ISVISIBLEONTAG(at, c->tags) ? n + 0 : n + 1, at = at->next);
+			c->next = NULL;
+			if (at) {
+				c->next = at->next;
+				at->next = c;
+			}
+			else
+				c->mon->clients = c;
+			break;
+		default: /* attach master */
+			c->next = c->mon->clients;
+			c->mon->clients = c;
 	}
-	c->next = c->mon->sel->next;
-	c->mon->sel->next = c;
-}
-
-void
-attachbottom(Client *c)
-{
-	Client *below = c->mon->clients;
-	for (; below && below->next; below = below->next);
-	c->next = NULL;
-	if (below)
-		below->next = c;
-	else
-		c->mon->clients = c;
-}
-
-void
-attachtop(Client *c)
-{
-	int n;
-	Monitor *m = selmon;
-	Client *below;
-
-	for (n = 1, below = c->mon->clients;
-		below && below->next && (below->isfloating || !ISVISIBLEONTAG(below, c->tags) || n != m->nmaster);
-		n = below->isfloating || !ISVISIBLEONTAG(below, c->tags) ? n + 0 : n + 1, below = below->next);
-	c->next = NULL;
-	if (below) {
-		c->next = below->next;
-		below->next = c;
-	}
-	else
-		c->mon->clients = c;
+	attachdirection = defaultattachdirection;
 }
 
 void
@@ -1521,25 +1508,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-	switch(attachdirection){
-		case 1:
-			attachabove(c);
-			break;
-		case 2:
-			attachaside(c);
-			break;
-		case 3:
-			attachbelow(c);
-			break;
-		case 4:
-			attachbottom(c);
-			break;
-		case 5:
-			attachtop(c);
-			break;
-		default:
-			attach(c);
-	}
+	attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
@@ -2016,28 +1985,15 @@ sendmon(Client *c, Monitor *m)
 	detachstack(c);
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
-	switch(attachdirection){
-		case 1:
-			attachabove(c);
-			break;
-		case 2:
-			attachaside(c);
-			break;
-		case 3:
-			attachbelow(c);
-			break;
-		case 4:
-			attachbottom(c);
-			break;
-		case 5:
-			attachtop(c);
-			break;
-		default:
-			attach(c);
-	}
+	attach(c);
 	attachstack(c);
 	focus(NULL);
 	arrange(NULL);
+}
+
+void
+setattachdir(const Arg *arg) {
+	attachdirection = arg->i;
 }
 
 void
@@ -2072,6 +2028,11 @@ sendevent(Client *c, Atom proto)
 		XSendEvent(dpy, c->win, False, NoEventMask, &ev);
 	}
 	return exists;
+}
+
+void
+setdefaultattachdir(const Arg *arg) {
+	defaultattachdirection = arg->i;
 }
 
 void
@@ -2146,6 +2107,7 @@ setcfact(const Arg *arg) {
 	arrange(selmon);
 }
 
+void
 setlayoutsafe(const Arg *arg)
 {
 	const Layout *ltptr = (Layout *)arg->v;
@@ -2955,25 +2917,7 @@ updategeom(void)
 					m->clients = c->next;
 					detachstack(c);
 					c->mon = mons;
-					switch(attachdirection){
-					case 1:
-						attachabove(c);
-						break;
-					case 2:
-						attachaside(c);
-						break;
-					case 3:
-						attachbelow(c);
-						break;
-					case 4:
-						attachbottom(c);
-						break;
-					case 5:
-						attachtop(c);
-						break;
-					default:
-						attach(c);
-					}
+					attach(c);
 					attachstack(c);
 				}
 				if (m == selmon)
