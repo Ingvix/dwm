@@ -245,6 +245,7 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
+static void focusurgent(const Arg *arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -311,6 +312,7 @@ static void tagprevmon(const Arg *arg);
 static void tagothermon(const Arg *arg, int dir);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
+static void togglefocusonnetactive(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -383,6 +385,7 @@ static Swallow *swallows;
 static Window root, wmcheckwin;
 static KeySym keychain = -1;
 static int attachdirection = -1;
+static int focusonnetactive = 0;
 
 #include "ipc.h"
 
@@ -754,12 +757,17 @@ clientmessage(XEvent *e)
 			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
 				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
-		for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
-		if (i < LENGTH(tags)) {
-			const Arg a = {.ui = 1 << i};
-			view(&a);
-			focus(c);
-			restack(selmon);
+		if (!focusonnetactive) {
+			if (c != selmon->sel && !c->isurgent)
+				seturgent(c, 1);
+		} else {
+			for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
+			if (i < LENGTH(tags)) {
+				const Arg a = {.ui = 1 << i};
+				view(&a);
+				focus(c);
+				restack(selmon);
+			}
 		}
 	}
 }
@@ -1217,6 +1225,22 @@ focusstack(const Arg *arg)
 	if (c) {
 		focus(c);
 		restack(selmon);
+	}
+}
+
+void
+focusurgent(const Arg *arg)
+{
+	Client *c;
+	int i;
+	for (c = selmon->clients; c && !c->isurgent; c = c->next);
+	if (c) {
+		for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
+		if (i < LENGTH(tags)) {
+			const Arg a = {.ui = 1 << i};
+			view(&a);
+			focus(c);
+		}
 	}
 }
 
@@ -1992,7 +2016,8 @@ sendmon(Client *c, Monitor *m)
 }
 
 void
-setattachdir(const Arg *arg) {
+setattachdir(const Arg *arg)
+{
 	attachdirection = arg->i;
 }
 
@@ -2031,7 +2056,8 @@ sendevent(Client *c, Atom proto)
 }
 
 void
-setdefaultattachdir(const Arg *arg) {
+setdefaultattachdir(const Arg *arg) 
+{
 	defaultattachdirection = arg->i;
 }
 
@@ -2693,6 +2719,13 @@ togglefloating(const Arg *arg)
 		selmon->sel->sfh = selmon->sel->h;
 	}
 	arrange(selmon);
+}
+
+void
+togglefocusonnetactive(const Arg *arg)
+{
+	focusonnetactive = !focusonnetactive;
+	focusurgent((Arg *){0});
 }
 
 void
