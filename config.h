@@ -35,8 +35,8 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	//{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
 /* window swallowing */
@@ -74,14 +74,14 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(CHAIN,KEY,TAG) \
 	{ MODKEY,                       CHAIN,    KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           CHAIN,    KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             CHAIN,    KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, CHAIN,    KEY,      toggletag,      {.ui = 1 << TAG} }, \
-	{ MODKEY|Mod4Mask,              CHAIN,    KEY,      tagnextmon,     {.ui = 1 << TAG} }, \
-	{ MODKEY|Mod4Mask|ShiftMask,    CHAIN,    KEY,      tagprevmon,     {.ui = 1 << TAG} },
+	{ MODKEY|Mod1Mask,              CHAIN,    KEY,      tagnextmon,     {.ui = 1 << TAG} }, \
+	{ MODKEY|Mod1Mask|ShiftMask,    CHAIN,    KEY,      tagprevmon,     {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -98,8 +98,8 @@ static Key keys[] = {
 	{ MODKEY,                       -1,         XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY,                       -1,         XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       -1,         XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       -1,         XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       -1,         XK_d,      incnmaster,     {.i = -1 } },
+	{ MODKEY|ShiftMask,             -1,         XK_k,      incnmaster,     {.i = +1 } },
+	{ MODKEY|ShiftMask,             -1,         XK_j,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       -1,         XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       -1,         XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY|ShiftMask,             -1,         XK_h,      setcfact,       {.f = +0.25} },
@@ -120,17 +120,16 @@ static Key keys[] = {
 	//{ MODKEY|Mod4Mask|ShiftMask,    -1,         XK_8,      incrohgaps,     {.i = -1 } },
 	//{ MODKEY|Mod4Mask,              -1,         XK_9,      incrovgaps,     {.i = +1 } },
 	//{ MODKEY|Mod4Mask|ShiftMask,    -1,         XK_9,      incrovgaps,     {.i = -1 } },
-	{ MODKEY|Mod4Mask,              -1,         XK_0,      togglegaps,     {0} },
-	{ MODKEY|Mod4Mask|ShiftMask,    -1,         XK_0,      defaultgaps,    {0} },
+	{ MODKEY,                       -1,         XK_0,      togglegaps,     {0} },
+	{ MODKEY|Mod1Mask|ShiftMask,    -1,         XK_0,      defaultgaps,    {0} },
 	{ MODKEY,                       -1,         XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             -1,         XK_c,      killclient,     {0} },
+	{ MODKEY|ShiftMask,             -1,         XK_q,      killclient,     {0} },
 	{ MODKEY,                       -1,         XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       -1,         XK_y,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       -1,         XK_u,      setlayout,      {.v = &layouts[5]} },
-	{ MODKEY,                       -1,         XK_f,      setlayout,      {.v = &layouts[13]} },
 	{ MODKEY,                       -1,         XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             -1,         XK_space,  togglefloating, {0} },
-	{ MODKEY,                       -1,         XK_0,      view,           {.ui = ~0 } },
+	{ MODKEY|Mod1Mask,              -1,         XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             -1,         XK_0,      tag,            {.ui = ~0 } },
 	{ MODKEY,                       -1,         XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       -1,         XK_period, focusmon,       {.i = +1 } },
@@ -148,7 +147,7 @@ static Key keys[] = {
 	TAGKEYS(                        -1,         XK_8,                      7)
 	TAGKEYS(                        -1,         XK_9,                      8)
     { MODKEY|ShiftMask,             -1,         XK_r,      self_restart,   {0} },
-	{ MODKEY|ShiftMask,             -1,         XK_q,      quit,           {0} },
+	{ MODKEY|ShiftMask,             -1,         XK_e,      quit,           {0} },
 	{ MODKEY,                       XK_a,       XK_d,      spawn,          {.v = dmenucmd } },
 };
 
