@@ -763,6 +763,7 @@ clientmessage(XEvent *e)
 			for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
 			if (i < LENGTH(tags)) {
 				const Arg a = {.ui = 1 << i};
+				selmon = c->mon;
 				view(&a);
 				focus(c);
 				restack(selmon);
