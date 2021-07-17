@@ -149,7 +149,12 @@ static Key keys[] = {
 	TAGKEYS(                        -1,         XK_9,                      8)
     { MODKEY|ShiftMask,             -1,         XK_r,      self_restart,   {0} },
 	{ MODKEY|ShiftMask,             -1,         XK_e,      quit,           {0} },
-	{ MODKEY,                       XK_a,       XK_d,      spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_o,       XK_u,      togglefocusonnetactive,{0} },
+	{ MODKEY,                       XK_a,       XK_a,      setattachdir,   {.i = -1} },
+	{ MODKEY,                       XK_a,       XK_k,      setattachdir,   {.i = 1} },
+	{ MODKEY,                       XK_a,       XK_j,      setattachdir,   {.i = 3} },
+	{ MODKEY,                       XK_a,       XK_h,      setattachdir,   {.i = 5} },
+	{ MODKEY,                       XK_a,       XK_l,      setattachdir,   {.i = 4} },
 };
 
 /* button definitions */
