@@ -353,7 +353,7 @@ static const char broken[] = "broken";
 static char stext[256];
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
-static int bh, blw = 0;      /* bar geometry */
+static int bh, blw, by = 0;  /* bar geometry */
 static int lrpad;            /* sum of left and right padding for text */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
@@ -1567,7 +1567,7 @@ managealtbar(Window win, XWindowAttributes *wa)
 		return;
 
 	m->barwin = win;
-	m->by = wa->y;
+	by = m->by = wa->y;
 	bh = m->bh = wa->height;
 	updatebarpos(m);
 	arrange(m);
@@ -2942,9 +2942,9 @@ updatebarpos(Monitor *m)
 	m->wy = m->my;
 	m->wh = m->mh;
 	if (m->showbar) {
-		m->wh -= m->bh;
-		m->by = m->topbar ? m->wy : m->wy + m->wh;
-		m->wy = m->topbar ? m->wy + m->bh : m->wy;
+		m->wh -= m->bh + by;
+		m->by = m->topbar ? m->wy + by : m->wy + m->wh;
+		m->wy = m->topbar ? m->wy + m->bh + by : m->wy;
 	} else
 		m->by = -m->bh;
 }
