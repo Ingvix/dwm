@@ -772,6 +772,10 @@ clientmessage(XEvent *e)
 				selmon = c->mon;
 				view(&a);
 				focus(c);
+				for (c = selmon->clients; c; c = c->next) {
+					if (c->isfullscreen && selmon->sel != c)
+						setfullscreen(c, 0);
+				}
 				restack(selmon);
 			}
 		}
@@ -1251,8 +1255,14 @@ focusurgent(const Arg *arg)
 		for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
 		if (i < LENGTH(tags)) {
 			const Arg a = {.ui = 1 << i};
+			selmon = c->mon;
 			view(&a);
 			focus(c);
+			for (c = selmon->clients; c; c = c->next) {
+				if (c->isfullscreen && selmon->sel != c)
+					setfullscreen(c, 0);
+			}
+			restack(selmon);
 		}
 	}
 }

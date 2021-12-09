@@ -4,9 +4,9 @@
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int gappih    = 20;       /* horiz inner gap between windows */
-static const unsigned int gappiv    = 10;       /* vert inner gap between windows */
-static const unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov    = 30;       /* vert outer gap between windows and screen edge */
+static const unsigned int gappiv    = 20;       /* vert inner gap between windows */
+static const unsigned int gappoh    = 20;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov    = 20;       /* vert outer gap between windows and screen edge */
 static       int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -40,6 +40,7 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	//{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	{ "TelegramDesktop", NULL, "Media viewer", 0,       1,           -1 },
 	{NULL,        NULL,       NULL,       0,            False,       -1 },
 };
 
@@ -133,7 +134,7 @@ static Key keys[] = {
 	{ MODKEY,                       -1,         XK_u,      setlayout,      {.v = &layouts[5]} },
 	{ MODKEY,                       -1,         XK_space,  setlayout,      {.v = &layouts[13]} },
 	{ MODKEY|ShiftMask,             -1,         XK_space,  togglefloating, {0} },
-	{ MODKEY|Mod1Mask,              -1,         XK_0,      view,           {.ui = ~0 } },
+	{ MODKEY|Mod1Mask,              -1,         XK_0,      comboview,      {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             -1,         XK_0,      combotag,       {.ui = ~0 } },
 	{ MODKEY,                       -1,         XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       -1,         XK_period, focusmon,       {.i = +1 } },
