@@ -40,7 +40,8 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	//{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "TelegramDesktop", NULL, "Media viewer", 0,       1,           -1 },
+	{"TelegramDesktop", NULL, "Media viewer", 0,        1,           -1 },
+	{"fontforge", "fontforge", "Point Info", 0,         1,           -1 },
 	{NULL,        NULL,       NULL,       0,            False,       -1 },
 };
 
@@ -79,11 +80,11 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod4Mask
+#define MODKEY Mod1Mask
 #define TAGKEYS(CHAIN,KEY,TAG) \
-	{ MODKEY,                       CHAIN,    KEY,      view,           {.ui = 1 << TAG} }, \
+	{ MODKEY,                       CHAIN,    KEY,      comboview,      {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           CHAIN,    KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             CHAIN,    KEY,      tag,            {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,             CHAIN,    KEY,      combotag,       {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, CHAIN,    KEY,      toggletag,      {.ui = 1 << TAG} }, \
 	{ MODKEY|Mod1Mask,              CHAIN,    KEY,      tagnextmon,     {.ui = 1 << TAG} }, \
 	{ MODKEY|Mod1Mask|ShiftMask,    CHAIN,    KEY,      tagprevmon,     {.ui = 1 << TAG} },
@@ -127,13 +128,14 @@ static Key keys[] = {
 	//{ MODKEY|Mod4Mask|ShiftMask,    -1,         XK_9,      incrovgaps,     {.i = -1 } },
 	{ MODKEY,                       -1,         XK_0,      togglegaps,     {0} },
 	{ MODKEY|Mod1Mask|ShiftMask,    -1,         XK_0,      defaultgaps,    {0} },
-	{ MODKEY,                       -1,         XK_Tab,    comboview,      {0} },
+	//{ MODKEY,                       -1,         XK_Tab,    comboview,      {0} },
 	{ MODKEY|ShiftMask,             -1,         XK_q,      killclient,     {0} },
 	{ MODKEY,                       -1,         XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       -1,         XK_y,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       -1,         XK_u,      setlayout,      {.v = &layouts[5]} },
 	{ MODKEY,                       -1,         XK_space,  setlayout,      {.v = &layouts[13]} },
 	{ MODKEY|ShiftMask,             -1,         XK_space,  togglefloating, {0} },
+	{ MODKEY|ShiftMask,             -1,         XK_f,      toggleallscreen,{0} },
 	{ MODKEY|Mod1Mask,              -1,         XK_0,      comboview,      {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             -1,         XK_0,      combotag,       {.ui = ~0 } },
 	{ MODKEY,                       -1,         XK_comma,  focusmon,       {.i = -1 } },
