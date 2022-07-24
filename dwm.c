@@ -119,7 +119,8 @@ struct Client {
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int bw, oldbw;
 	unsigned int tags;
-	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+	int isfixed, isfloating, isurgent, neverfocus, oldstate,
+		isfullscreen, allscreen;
 	Client *next;
 	Client *snext;
 	Client *swallowedby;
@@ -292,6 +293,7 @@ static void tagmon(const Arg *arg);
 static void tagnextmon(const Arg *arg);
 static void tagprevmon(const Arg *arg);
 static void tagothermon(const Arg *arg, int dir);
+static void toggleallscreen(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglefocusonnetactive(const Arg *arg);
@@ -304,6 +306,7 @@ static void unmapnotify(XEvent *e);
 static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientlist(void);
+static void updatefullscreen(Client *c);
 static int updategeom(void);
 static void updatemotifhints(Client *c);
 static void updatenumlockmask(void);
@@ -736,10 +739,7 @@ clientmessage(XEvent *e)
 				selmon = c->mon;
 				view(&a);
 				focus(c);
-				for (c = selmon->clients; c; c = c->next) {
-					if (c->isfullscreen && selmon->sel != c)
-						setfullscreen(c, 0);
-				}
+				updatefullscreen(c);
 				restack(selmon);
 			}
 		}
@@ -782,9 +782,12 @@ configurenotify(XEvent *e)
 			drw_resize(drw, sw, bh);
 			updatebars();
 			for (m = mons; m; m = m->next) {
-				for (c = m->clients; c; c = c->next)
-					if (c->isfullscreen)
-						resizeclient(c, m->mx, m->my, m->mw, m->mh);
+				for (c = m->clients; c; c = c->next) {
+					if (c->isfullscreen) {
+						if (c->allscreen) resizeclient(c, 0, 0, sw, sh);
+						else resizeclient(c, m->mx, m->my, m->mw, m->mh);
+					}
+				}
 				XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, m->ww, m->bh);
 			}
 			focus(NULL);
@@ -1172,12 +1175,15 @@ focusin(XEvent *e)
 void
 focusmon(const Arg *arg)
 {
-	Monitor *m;
+	Monitor *m, *fm;
 
 	if (!mons->next)
 		return;
 	if ((m = dirtomon(arg->i)) == selmon)
 		return;
+	for (fm = mons; fm; fm = fm->next)
+		if (fm->sel && fm->sel->isfullscreen && fm->sel->allscreen)
+			return;
 	unfocus(selmon->sel, 0);
 	selmon = m;
 	focus(NULL);
@@ -1223,7 +1229,8 @@ focusurgent(const Arg *arg)
 			view(&a);
 			focus(c);
 			for (c = selmon->clients; c; c = c->next) {
-				if (c->isfullscreen && selmon->sel != c)
+				if (c->isfullscreen && selmon->sel != c
+						&& c->tags & selmon->tagset[selmon->seltags])
 					setfullscreen(c, 0);
 			}
 			restack(selmon);
@@ -1576,6 +1583,7 @@ maprequest(XEvent *e)
 				manage(ev->window, &wa);
 		break;
 	}
+	updatefullscreen(c);
 
 	/* Reduce decay counter of all swallow instances. */
 	if (swaldecay)
@@ -2048,7 +2056,10 @@ setfullscreen(Client *c, int fullscreen)
 		c->oldbw = c->bw;
 		c->bw = 0;
 		c->isfloating = 1;
-		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
+		if (c->allscreen) {
+			resizeclient(c, 0, 0, sw, sh);
+		} else
+			resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
 	} else if (!fullscreen && c->isfullscreen){
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
@@ -2588,6 +2599,8 @@ tagmon(const Arg *arg)
 {
 	if (!selmon->sel || !mons->next)
 		return;
+	if (selmon->sel->isfullscreen)
+		setfullscreen(selmon->sel, 0);
 	sendmon(selmon->sel, dirtomon(arg->i));
 }
 
@@ -2618,6 +2631,19 @@ tagothermon(const Arg *arg, int dir)
 		sel->tags = arg->ui & TAGMASK;
 		focus(NULL);
 		arrange(newmon);
+	}
+}
+
+void
+toggleallscreen(const Arg *arg)
+{
+	Client *c = selmon->sel;
+	c->allscreen = !c->allscreen;
+	if (c->isfullscreen) {
+		if (c->allscreen)
+			resizeclient(c, 0, 0, sw, sh);
+		else
+			resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 	}
 }
 
@@ -2850,6 +2876,20 @@ updateclientlist()
 					(unsigned char *) &(c->win), 1);
 			}
 		}
+	}
+}
+
+void
+updatefullscreen(Client *c) {
+	for (Monitor *m = mons; m; m = m->next) {
+		if (m == selmon) {
+			for (c = m->clients; c; c = c->next)
+				if (m->sel != c && c->isfullscreen
+						&& c->tags & m->tagset[m->seltags])
+					setfullscreen(c, 0);
+		} else if (m->sel && m->sel != c && m->sel->allscreen
+				&& m->sel->isfullscreen)
+			setfullscreen(c, 0);
 	}
 }
 
