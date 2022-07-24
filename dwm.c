@@ -2832,7 +2832,7 @@ updatebarpos(Monitor *m)
 		m->by = m->topbar ? m->wy + by : m->wy + m->wh;
 		m->wy = m->topbar ? m->wy + m->bh + by : m->wy;
 	} else
-		m->by = -m->bh;
+		m->by = -m->bh-m->by;
 }
 
 void
