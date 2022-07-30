@@ -369,7 +369,6 @@ static Swallow *swallows;
 static Window root, wmcheckwin;
 static KeySym keychain = -1;
 static int attachdirection = -1;
-static int focusonnetactive = 0;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
