@@ -42,6 +42,7 @@ static const Rule rules[] = {
 	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 	{"TelegramDesktop", NULL, "Media viewer", 0,        1,           -1 },
 	{"fontforge", "fontforge", "Point Info", 0,         1,           -1 },
+	{NULL,        "float",    NULL,       1 << 9,       1,           2  },
 	{NULL,        NULL,       NULL,       0,            False,       -1 },
 };
 
