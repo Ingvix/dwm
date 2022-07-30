@@ -40,10 +40,10 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	//{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{"TelegramDesktop", NULL, "Media viewer", 0,        1,           -1 },
-	{"fontforge", "fontforge", "Point Info", 0,         1,           -1 },
-	{NULL,        "float",    NULL,       1 << 9,       1,           2  },
-	{NULL,        NULL,       NULL,       0,            False,       -1 },
+	{ "TelegramDesktop", NULL, "Media viewer", 0,      1,           -1 },
+	{ "fontforge", "fontforge", "Point Info", 0,       1,           -1 },
+	{ NULL,       "float",    NULL,       255,         1,           1  },
+	{ NULL,       NULL,       "float",    255,         1,           1  },
 };
 
 /* window swallowing */
