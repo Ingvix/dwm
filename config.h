@@ -37,13 +37,13 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	//{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "TelegramDesktop", NULL, "Media viewer", 0,      1,           -1 },
-	{ "fontforge", "fontforge", "Point Info", 0,       1,           -1 },
-	{ NULL,       "float",    NULL,       255,         1,           1  },
-	{ NULL,       NULL,       "float",    255,         1,           1  },
+	/* class      instance    title       tags mask     iscentered   isfloating   monitor */
+	//{ "Gimp",     NULL,       NULL,       0,            0,           1,           -1 },
+	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           0,           -1 },
+	{ "TelegramDesktop", NULL, "Media viewer", 0,       0,           1,           -1 },
+	{ "fontforge", "fontforge", "Point Info", 0,        0,           1,           -1 },
+	{ NULL,       "float",    NULL,       255,          1,           1,           1  },
+	{ NULL,       NULL,       "float",    255,          1,           1,           1  },
 };
 
 /* window swallowing */
@@ -82,7 +82,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(CHAIN,KEY,TAG) \
 	{ MODKEY,                       CHAIN,    KEY,      comboview,      {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           CHAIN,    KEY,      toggleview,     {.ui = 1 << TAG} }, \
